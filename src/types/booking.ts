@@ -9,12 +9,13 @@ export interface ArrivalDetails {
 export interface Vehicle {
   id: string;
   name: string;
-  type: 'sedan' | 'suv' | 'van';
+  type: 'sedan' | 'suv' | 'van' | 'minibus' | 'luxury';
   passengers: string;
   luggage: number;
   features: string[];
   pricePerDay: number;
   image: string;
+  description?: string;
 }
 
 export interface Destination {
@@ -23,7 +24,9 @@ export interface Destination {
   description: string;
   nights: number;
   image: string;
-  region: 'cultural' | 'hill-country' | 'coastal' | 'wildlife' | 'northern';
+  region: 'cultural' | 'hill-country' | 'coastal' | 'wildlife' | 'northern' | 'eastern';
+  highlights?: string[];
+  bestTime?: string;
 }
 
 export interface HotelCategory {
@@ -53,6 +56,7 @@ export interface Activity {
   price: number;
   duration: string;
   category: 'adventure' | 'nature' | 'cultural' | 'wellness';
+  location?: string;
 }
 
 export interface ExtraService {
@@ -82,4 +86,16 @@ export interface BookingState {
   extras: ExtraService[];
   contact: ContactInfo;
   currency: 'USD' | 'EUR';
+}
+
+export interface TourPackage {
+  id: string;
+  name: string;
+  duration: string;
+  description: string;
+  highlights: string[];
+  destinations: string[];
+  price: number;
+  image: string;
+  category: 'cultural' | 'beach' | 'wildlife' | 'adventure' | 'luxury' | 'honeymoon';
 }

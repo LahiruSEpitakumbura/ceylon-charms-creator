@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from './Logo';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   onStartBooking: () => void;
@@ -9,12 +10,12 @@ interface HeaderProps {
 
 export function Header({ onStartBooking }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const navLinks = [
-    { label: 'About', href: '#about' },
-    { label: 'Tours', href: '#tours' },
-    { label: 'Destinations', href: '#destinations' },
-    { label: 'Vehicles', href: '#vehicles' },
+    { label: 'About', href: '/about' },
+    { label: 'Tours', href: '/tours' },
+    { label: 'Destinations', href: '/destinations' },
     { label: 'Contact', href: '#contact' },
   ];
 
@@ -23,20 +24,32 @@ export function Header({ onStartBooking }: HeaderProps) {
       <div className="container">
         <div className="flex items-center justify-between py-4 lg:py-6">
           {/* Logo */}
-          <Logo className="text-primary-foreground [&_*]:text-primary-foreground [&_.text-muted-foreground]:text-primary-foreground/70" size="md" />
+          <Link to="/">
+            <Logo className="text-primary-foreground [&_*]:text-primary-foreground [&_.text-muted-foreground]:text-primary-foreground/70" size="md" />
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-primary-foreground/90 hover:text-primary-foreground font-medium transition-colors"
-              >
-                {link.label}
-              </a>
+              link.href.startsWith('/') ? (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="text-primary-foreground/90 hover:text-primary-foreground font-medium transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="text-primary-foreground/90 hover:text-primary-foreground font-medium transition-colors"
+                >
+                  {link.label}
+                </a>
+              )
             ))}
-            <Button variant="hero" onClick={onStartBooking}>
+            <Button variant="hero" onClick={() => navigate('/')}>
               Plan Your Trip
             </Button>
           </nav>
@@ -55,16 +68,27 @@ export function Header({ onStartBooking }: HeaderProps) {
           <nav className="lg:hidden py-4 border-t border-primary-foreground/20 animate-fade-in">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="text-primary-foreground/90 hover:text-primary-foreground font-medium py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.label}
-                </a>
+                link.href.startsWith('/') ? (
+                  <Link
+                    key={link.label}
+                    to={link.href}
+                    className="text-primary-foreground/90 hover:text-primary-foreground font-medium py-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    className="text-primary-foreground/90 hover:text-primary-foreground font-medium py-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.label}
+                  </a>
+                )
               ))}
-              <Button variant="hero" onClick={() => { onStartBooking(); setIsMenuOpen(false); }}>
+              <Button variant="hero" onClick={() => { navigate('/'); setIsMenuOpen(false); }}>
                 Plan Your Trip
               </Button>
             </div>
