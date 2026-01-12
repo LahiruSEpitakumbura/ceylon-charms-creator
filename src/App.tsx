@@ -8,6 +8,11 @@ import About from "./pages/About";
 import Destinations from "./pages/Destinations";
 import Tours from "./pages/Tours";
 import NotFound from "./pages/NotFound";
+import Register from "./pages/Register";
+import RegisterCustomer from "./pages/RegisterCustomer";
+import RegisterGuide from "./pages/RegisterGuide";
+import RegisterHotel from "./pages/RegisterHotel";
+import RegisterDriver from "./pages/RegisterDriver";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +27,11 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/destinations" element={<Destinations />} />
           <Route path="/tours" element={<Tours />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/register/customer" element={<RegisterCustomer />} />
+          <Route path="/register/guide" element={<RegisterGuide />} />
+          <Route path="/register/hotel" element={<RegisterHotel />} />
+          <Route path="/register/driver" element={<RegisterDriver />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
