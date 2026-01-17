@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,8 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { ArrowLeft, MapPin } from 'lucide-react';
+import { ArrowLeft, MapPin, Loader2, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
 
@@ -17,7 +18,9 @@ const specializations = ['Cultural Tours', 'Wildlife Safari', 'Adventure Tours',
 
 export default function RegisterGuide() {
   const navigate = useNavigate();
+  const { user, loading, signOut } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasExistingProfile, setHasExistingProfile] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -29,6 +32,45 @@ export default function RegisterGuide() {
     license_number: '',
     price_per_day: 0,
   });
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth/provider?type=guide');
+    }
+  }, [user, loading, navigate]);
+
+  // Check for existing profile and pre-fill email
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({ ...prev, email: user.email || '' }));
+      
+      // Check if user already has a guide profile
+      const checkProfile = async () => {
+        const { data } = await supabase
+          .from('guide_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (data) {
+          setHasExistingProfile(true);
+          setFormData({
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            languages: data.languages || [],
+            experience_years: data.experience_years,
+            specializations: data.specializations || [],
+            bio: data.bio || '',
+            license_number: data.license_number || '',
+            price_per_day: Number(data.price_per_day),
+          });
+        }
+      };
+      checkProfile();
+    }
+  }, [user]);
 
   const handleArrayToggle = (field: 'languages' | 'specializations', value: string) => {
     setFormData(prev => ({
@@ -42,6 +84,11 @@ export default function RegisterGuide() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user) {
+      toast.error('Please login to continue');
+      return;
+    }
+
     if (!formData.name || !formData.email || !formData.phone || formData.languages.length === 0) {
       toast.error('Please fill in all required fields');
       return;
@@ -50,21 +97,47 @@ export default function RegisterGuide() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from('guide_profiles')
-        .insert([{ ...formData, status: 'pending' }]);
+      if (hasExistingProfile) {
+        const { error } = await supabase
+          .from('guide_profiles')
+          .update({ ...formData })
+          .eq('user_id', user.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success('Profile updated successfully!');
+      } else {
+        const { error } = await supabase
+          .from('guide_profiles')
+          .insert([{ ...formData, user_id: user.id, status: 'pending' }]);
 
-      toast.success('Application submitted! We will review and contact you soon.');
+        if (error) throw error;
+        toast.success('Profile submitted! We will review and contact you soon.');
+      }
       navigate('/');
     } catch (error: any) {
-      console.error('Error submitting application:', error);
-      toast.error('Failed to submit application. Please try again.');
+      console.error('Error submitting profile:', error);
+      toast.error('Failed to submit profile. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/register');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,10 +146,13 @@ export default function RegisterGuide() {
           <Link to="/">
             <Logo className="h-10" />
           </Link>
-          <Link to="/register" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Link>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -87,9 +163,14 @@ export default function RegisterGuide() {
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <MapPin className="h-8 w-8 text-green-600" />
               </div>
-              <CardTitle className="text-2xl">Register as a Tour Guide</CardTitle>
+              <CardTitle className="text-2xl">
+                {hasExistingProfile ? 'Update Your Guide Profile' : 'Register as a Tour Guide'}
+              </CardTitle>
               <CardDescription>
-                Join our network of professional tour guides in Sri Lanka
+                {hasExistingProfile 
+                  ? 'Update your profile information below'
+                  : 'Join our network of professional tour guides in Sri Lanka'
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -211,12 +292,21 @@ export default function RegisterGuide() {
                 </div>
 
                 <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                  {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {hasExistingProfile ? 'Updating...' : 'Submitting...'}
+                    </>
+                  ) : (
+                    hasExistingProfile ? 'Update Profile' : 'Submit Application'
+                  )}
                 </Button>
 
-                <p className="text-sm text-muted-foreground text-center">
-                  Your application will be reviewed by our team. We'll contact you within 2-3 business days.
-                </p>
+                {!hasExistingProfile && (
+                  <p className="text-sm text-muted-foreground text-center">
+                    Your application will be reviewed by our team. We'll contact you within 2-3 business days.
+                  </p>
+                )}
               </form>
             </CardContent>
           </Card>

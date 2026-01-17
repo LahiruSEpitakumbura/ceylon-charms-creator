@@ -11,27 +11,31 @@ const registrationOptions = [
     icon: User,
     href: '/register/customer',
     color: 'bg-primary/10 text-primary',
+    requiresAuth: false,
   },
   {
     title: 'Tour Guide',
     description: 'Join our network of professional tour guides in Sri Lanka',
     icon: MapPin,
-    href: '/register/guide',
+    href: '/auth/provider?type=guide',
     color: 'bg-green-100 text-green-600',
+    requiresAuth: true,
   },
   {
     title: 'Hotel Partner',
     description: 'Partner with us to welcome tourists from around the world',
     icon: Building2,
-    href: '/register/hotel',
+    href: '/auth/provider?type=hotel',
     color: 'bg-blue-100 text-blue-600',
+    requiresAuth: true,
   },
   {
     title: 'Driver Services',
     description: 'Register as a driver for tourist transportation services',
     icon: Car,
-    href: '/register/driver',
+    href: '/auth/provider?type=driver',
     color: 'bg-orange-100 text-orange-600',
+    requiresAuth: true,
   },
 ];
 
@@ -74,7 +78,7 @@ export default function Register() {
                   </CardHeader>
                   <CardContent>
                     <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                      Get Started
+                      {option.requiresAuth ? 'Login / Sign Up' : 'Get Started'}
                     </Button>
                   </CardContent>
                 </Card>
@@ -84,8 +88,8 @@ export default function Register() {
 
           <div className="mt-12 text-center">
             <p className="text-muted-foreground">
-              Already have an account?{' '}
-              <Link to="/" className="text-primary hover:underline font-medium">
+              Already registered as a service provider?{' '}
+              <Link to="/auth/provider?type=guide" className="text-primary hover:underline font-medium">
                 Sign in here
               </Link>
             </p>

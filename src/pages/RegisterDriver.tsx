@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { ArrowLeft, Car } from 'lucide-react';
+import { Car, Loader2, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
 
@@ -17,7 +18,9 @@ const vehicleTypes = ['Sedan', 'SUV', 'Van', 'Mini Bus', 'Luxury Car', 'TukTuk']
 
 export default function RegisterDriver() {
   const navigate = useNavigate();
+  const { user, loading, signOut } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasExistingProfile, setHasExistingProfile] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -34,6 +37,48 @@ export default function RegisterDriver() {
     price_per_day: 0,
   });
 
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth/provider?type=driver');
+    }
+  }, [user, loading, navigate]);
+
+  // Check for existing profile and pre-fill email
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({ ...prev, email: user.email || '' }));
+      
+      const checkProfile = async () => {
+        const { data } = await supabase
+          .from('driver_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (data) {
+          setHasExistingProfile(true);
+          setFormData({
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            license_number: data.license_number,
+            license_expiry: data.license_expiry || '',
+            vehicle_type: data.vehicle_type,
+            vehicle_model: data.vehicle_model || '',
+            vehicle_year: data.vehicle_year || new Date().getFullYear(),
+            vehicle_plate: data.vehicle_plate || '',
+            max_passengers: data.max_passengers,
+            languages: data.languages || [],
+            experience_years: data.experience_years,
+            price_per_day: Number(data.price_per_day),
+          });
+        }
+      };
+      checkProfile();
+    }
+  }, [user]);
+
   const handleLanguageToggle = (lang: string) => {
     setFormData(prev => ({
       ...prev,
@@ -46,6 +91,11 @@ export default function RegisterDriver() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user) {
+      toast.error('Please login to continue');
+      return;
+    }
+
     if (!formData.name || !formData.email || !formData.phone || !formData.license_number || !formData.vehicle_type) {
       toast.error('Please fill in all required fields');
       return;
@@ -54,25 +104,55 @@ export default function RegisterDriver() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from('driver_profiles')
-        .insert([{ 
-          ...formData, 
-          license_expiry: formData.license_expiry || null,
-          status: 'pending' 
-        }]);
+      if (hasExistingProfile) {
+        const { error } = await supabase
+          .from('driver_profiles')
+          .update({ 
+            ...formData, 
+            license_expiry: formData.license_expiry || null 
+          })
+          .eq('user_id', user.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success('Driver profile updated successfully!');
+      } else {
+        const { error } = await supabase
+          .from('driver_profiles')
+          .insert([{ 
+            ...formData, 
+            user_id: user.id,
+            license_expiry: formData.license_expiry || null,
+            status: 'pending' 
+          }]);
 
-      toast.success('Application submitted! We will review and contact you soon.');
+        if (error) throw error;
+        toast.success('Profile submitted! We will review and contact you soon.');
+      }
       navigate('/');
     } catch (error: any) {
-      console.error('Error submitting application:', error);
-      toast.error('Failed to submit application. Please try again.');
+      console.error('Error submitting profile:', error);
+      toast.error('Failed to submit profile. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/register');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -81,10 +161,13 @@ export default function RegisterDriver() {
           <Link to="/">
             <Logo className="h-10" />
           </Link>
-          <Link to="/register" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Link>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -95,9 +178,14 @@ export default function RegisterDriver() {
               <div className="mx-auto w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
                 <Car className="h-8 w-8 text-orange-600" />
               </div>
-              <CardTitle className="text-2xl">Register as a Driver</CardTitle>
+              <CardTitle className="text-2xl">
+                {hasExistingProfile ? 'Update Your Driver Profile' : 'Register as a Driver'}
+              </CardTitle>
               <CardDescription>
-                Join our fleet of professional drivers for tourist transportation
+                {hasExistingProfile 
+                  ? 'Update your driver information below'
+                  : 'Join our fleet of professional drivers for tourist transportation'
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -269,12 +357,21 @@ export default function RegisterDriver() {
                 </div>
 
                 <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                  {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {hasExistingProfile ? 'Updating...' : 'Submitting...'}
+                    </>
+                  ) : (
+                    hasExistingProfile ? 'Update Profile' : 'Submit Application'
+                  )}
                 </Button>
 
-                <p className="text-sm text-muted-foreground text-center">
-                  Your application will be reviewed by our team. We'll contact you within 2-3 business days.
-                </p>
+                {!hasExistingProfile && (
+                  <p className="text-sm text-muted-foreground text-center">
+                    Your application will be reviewed by our team. We'll contact you within 2-3 business days.
+                  </p>
+                )}
               </form>
             </CardContent>
           </Card>

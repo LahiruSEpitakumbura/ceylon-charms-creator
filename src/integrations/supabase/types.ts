@@ -66,6 +66,7 @@ export type Database = {
           price_per_day: number
           status: Database["public"]["Enums"]["provider_status"]
           updated_at: string
+          user_id: string | null
           vehicle_model: string | null
           vehicle_photo_url: string | null
           vehicle_plate: string | null
@@ -87,6 +88,7 @@ export type Database = {
           price_per_day?: number
           status?: Database["public"]["Enums"]["provider_status"]
           updated_at?: string
+          user_id?: string | null
           vehicle_model?: string | null
           vehicle_photo_url?: string | null
           vehicle_plate?: string | null
@@ -108,6 +110,7 @@ export type Database = {
           price_per_day?: number
           status?: Database["public"]["Enums"]["provider_status"]
           updated_at?: string
+          user_id?: string | null
           vehicle_model?: string | null
           vehicle_photo_url?: string | null
           vehicle_plate?: string | null
@@ -132,6 +135,7 @@ export type Database = {
           specializations: string[] | null
           status: Database["public"]["Enums"]["provider_status"]
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           bio?: string | null
@@ -148,6 +152,7 @@ export type Database = {
           specializations?: string[] | null
           status?: Database["public"]["Enums"]["provider_status"]
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           bio?: string | null
@@ -164,6 +169,7 @@ export type Database = {
           specializations?: string[] | null
           status?: Database["public"]["Enums"]["provider_status"]
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -185,6 +191,7 @@ export type Database = {
           star_rating: number
           status: Database["public"]["Enums"]["provider_status"]
           updated_at: string
+          user_id: string | null
           website: string | null
         }
         Insert: {
@@ -204,6 +211,7 @@ export type Database = {
           star_rating?: number
           status?: Database["public"]["Enums"]["provider_status"]
           updated_at?: string
+          user_id?: string | null
           website?: string | null
         }
         Update: {
@@ -223,6 +231,7 @@ export type Database = {
           star_rating?: number
           status?: Database["public"]["Enums"]["provider_status"]
           updated_at?: string
+          user_id?: string | null
           website?: string | null
         }
         Relationships: []
@@ -406,14 +415,39 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "guide" | "hotel" | "driver"
       booking_status:
         | "pending"
         | "confirmed"
@@ -548,6 +582,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "guide", "hotel", "driver"],
       booking_status: [
         "pending",
         "confirmed",
