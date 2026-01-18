@@ -50,6 +50,39 @@ export type Database = {
         }
         Relationships: []
       }
+      destinations: {
+        Row: {
+          best_season: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_urls: string[] | null
+          main_attractions: string[] | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          best_season?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_urls?: string[] | null
+          main_attractions?: string[] | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          best_season?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_urls?: string[] | null
+          main_attractions?: string[] | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       driver_profiles: {
         Row: {
           created_at: string
@@ -180,6 +213,7 @@ export type Database = {
           city: string
           created_at: string
           description: string | null
+          destination_id: string | null
           email: string
           id: string
           name: string
@@ -200,6 +234,7 @@ export type Database = {
           city: string
           created_at?: string
           description?: string | null
+          destination_id?: string | null
           email: string
           id?: string
           name: string
@@ -220,6 +255,7 @@ export type Database = {
           city?: string
           created_at?: string
           description?: string | null
+          destination_id?: string | null
           email?: string
           id?: string
           name?: string
@@ -234,7 +270,15 @@ export type Database = {
           user_id?: string | null
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "hotel_profiles_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "destinations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_info: {
         Row: {
@@ -432,6 +476,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      vehicles: {
+        Row: {
+          availability_status: string
+          created_at: string
+          driver_id: string | null
+          features: string[] | null
+          id: string
+          image_urls: string[] | null
+          luggage_capacity: number
+          luxury_category: string | null
+          passenger_capacity: number
+          price_per_day: number
+          updated_at: string
+          vehicle_type: string
+        }
+        Insert: {
+          availability_status?: string
+          created_at?: string
+          driver_id?: string | null
+          features?: string[] | null
+          id?: string
+          image_urls?: string[] | null
+          luggage_capacity?: number
+          luxury_category?: string | null
+          passenger_capacity?: number
+          price_per_day?: number
+          updated_at?: string
+          vehicle_type: string
+        }
+        Update: {
+          availability_status?: string
+          created_at?: string
+          driver_id?: string | null
+          features?: string[] | null
+          id?: string
+          image_urls?: string[] | null
+          luggage_capacity?: number
+          luxury_category?: string | null
+          passenger_capacity?: number
+          price_per_day?: number
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
