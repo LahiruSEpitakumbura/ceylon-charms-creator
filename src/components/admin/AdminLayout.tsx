@@ -1,5 +1,5 @@
-import { ReactNode, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useLocation, Link, Outlet } from 'react-router-dom';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -22,9 +22,6 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
 
-interface AdminLayoutProps {
-  children: ReactNode;
-}
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
@@ -37,7 +34,7 @@ const menuItems = [
   { icon: Settings, label: 'Settings', path: '/admin/settings' },
 ];
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+export default function AdminLayout() {
   const { isAdmin, loading } = useAdmin();
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
@@ -145,7 +142,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main content */}
       <main className="flex-1 lg:ml-0 overflow-auto">
         <div className="p-6 lg:p-8">
-          {children}
+          <Outlet />
         </div>
       </main>
     </div>
