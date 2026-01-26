@@ -16,6 +16,7 @@ export function Header({ onStartBooking }: HeaderProps) {
     { label: 'About', href: '/about' },
     { label: 'Tours', href: '/tours' },
     { label: 'Destinations', href: '/destinations' },
+    { label: 'Register', href: '/register' },
     { label: 'Contact', href: '#contact' },
   ];
 
