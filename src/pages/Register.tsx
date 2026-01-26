@@ -86,11 +86,17 @@ export default function Register() {
             ))}
           </div>
 
-          <div className="mt-12 text-center">
+          <div className="mt-12 text-center space-y-2">
             <p className="text-muted-foreground">
               Already registered as a service provider?{' '}
               <Link to="/auth/provider?type=guide" className="text-primary hover:underline font-medium">
                 Sign in here
+              </Link>
+            </p>
+            <p className="text-muted-foreground">
+              Or access your{' '}
+              <Link to="/provider" className="text-primary hover:underline font-medium">
+                Provider Dashboard
               </Link>
             </p>
           </div>
