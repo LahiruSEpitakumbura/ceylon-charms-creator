@@ -1,5 +1,6 @@
-import { MapPin, Phone, Mail, Facebook, Instagram, Youtube } from 'lucide-react';
+import { MapPin, Phone, Mail, Facebook, Instagram, Youtube, Shield } from 'lucide-react';
 import { Logo } from './Logo';
+import { Link } from 'react-router-dom';
 
 export function Footer() {
   return (
@@ -47,6 +48,12 @@ export function Footer() {
               <li><a href="#" className="hover:text-background transition-colors">Cancellation</a></li>
               <li><a href="#" className="hover:text-background transition-colors">Travel Insurance</a></li>
               <li><a href="#" className="hover:text-background transition-colors">Privacy Policy</a></li>
+              <li>
+                <Link to="/admin/login" className="hover:text-background transition-colors inline-flex items-center gap-1">
+                  <Shield className="w-3 h-3" />
+                  Admin Portal
+                </Link>
+              </li>
             </ul>
           </div>
 
