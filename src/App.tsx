@@ -15,6 +15,9 @@ import RegisterGuide from "./pages/RegisterGuide";
 import RegisterHotel from "./pages/RegisterHotel";
 import RegisterDriver from "./pages/RegisterDriver";
 import ProviderAuth from "./pages/ProviderAuth";
+import ProviderDashboard from "./pages/provider/Dashboard";
+import ProviderProfile from "./pages/provider/Profile";
+import ProviderBookings from "./pages/provider/Bookings";
 import AdminLogin from "./pages/AdminLogin";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -46,6 +49,9 @@ const App = () => (
             <Route path="/register/guide" element={<RegisterGuide />} />
             <Route path="/register/hotel" element={<RegisterHotel />} />
             <Route path="/register/driver" element={<RegisterDriver />} />
+            <Route path="/provider" element={<ProviderDashboard />} />
+            <Route path="/provider/profile" element={<ProviderProfile />} />
+            <Route path="/provider/bookings" element={<ProviderBookings />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />

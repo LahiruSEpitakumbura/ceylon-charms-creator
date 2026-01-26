@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
+import { useProviderRole } from '@/hooks/useProviderRole';
 import { toast } from 'sonner';
 import { ArrowLeft, MapPin, Building2, Car, Loader2 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
@@ -43,7 +44,8 @@ export default function ProviderAuth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const providerType = (searchParams.get('type') as ProviderType) || 'guide';
-  const { user, loading, signUp, signIn } = useAuth();
+  const { user, loading: authLoading, signUp, signIn } = useAuth();
+  const { role, profile, loading: profileLoading } = useProviderRole();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
@@ -57,11 +59,16 @@ export default function ProviderAuth() {
   const config = providerConfig[providerType] || providerConfig.guide;
 
   useEffect(() => {
-    if (!loading && user) {
-      // Redirect to profile creation if authenticated
-      navigate(`/register/${providerType}`);
+    if (!authLoading && !profileLoading && user) {
+      // If user has a profile, redirect to provider dashboard
+      if (profile && role) {
+        navigate('/provider');
+      } else {
+        // Otherwise redirect to profile creation
+        navigate(`/register/${providerType}`);
+      }
     }
-  }, [user, loading, navigate, providerType]);
+  }, [user, authLoading, profileLoading, profile, role, navigate, providerType]);
 
   const validateForm = () => {
     try {
@@ -124,7 +131,7 @@ export default function ProviderAuth() {
     }
   };
 
-  if (loading) {
+  if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
