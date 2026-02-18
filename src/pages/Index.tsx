@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ArrowDown, Sparkles, MapPin, Star, Users, Calendar, Clock, ChevronRight, Mountain, Waves, TreePine, Compass, Quote } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { ArrowDown, Sparkles, MapPin, Star, Users, Calendar, Clock, ChevronRight, Mountain, Waves, TreePine, Compass, Quote, Plane, Hotel, Camera, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -8,6 +8,7 @@ import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { BookingWizard } from '@/components/booking/BookingWizard';
 import { Link } from 'react-router-dom';
 import heroImage from '@/assets/hero-sigiriya-aerial.jpg';
+import heroVideo from '@/assets/hero-video.mp4';
 import destSigiriya from '@/assets/dest-sigiriya.jpg';
 import destKandy from '@/assets/dest-kandy.jpg';
 import destElla from '@/assets/dest-ella.jpg';
@@ -19,6 +20,16 @@ import expCulture from '@/assets/experience-culture.jpg';
 
 const Index = () => {
   const [showBooking, setShowBooking] = useState(false);
+  const [isVideoPaused, setIsVideoPaused] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % 4);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   const startBooking = () => {
     setShowBooking(true);
@@ -77,44 +88,159 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      {/* ─── HERO ─── */}
+      {/* ─── HERO WITH VIDEO ─── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Video Background with Image Fallback */}
         <div className="absolute inset-0 z-0">
-          <img src={heroImage} alt="Aerial view of Sigiriya Rock Fortress surrounded by lush jungle at golden hour" className="w-full h-full object-cover scale-105" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[hsl(168_50%_12%/0.5)] via-[hsl(168_50%_15%/0.6)] to-[hsl(168_50%_10%/0.85)]" />
+          <img src={heroImage} alt="Aerial view of Sigiriya Rock Fortress" className="w-full h-full object-cover absolute inset-0" />
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover absolute inset-0"
+            poster={heroImage}
+          >
+            <source src={heroVideo} type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-b from-[hsl(168_50%_8%/0.45)] via-[hsl(168_50%_10%/0.55)] to-[hsl(168_50%_8%/0.88)]" />
         </div>
+
+        {/* Video play/pause toggle */}
+        <button
+          onClick={() => {
+            if (videoRef.current) {
+              if (isVideoPaused) { videoRef.current.play(); } else { videoRef.current.pause(); }
+              setIsVideoPaused(!isVideoPaused);
+            }
+          }}
+          className="absolute bottom-6 right-6 z-30 w-10 h-10 rounded-full bg-primary-foreground/15 backdrop-blur-md border border-primary-foreground/20 flex items-center justify-center text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/25 transition-all"
+          aria-label={isVideoPaused ? 'Play video' : 'Pause video'}
+        >
+          {isVideoPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+        </button>
 
         <Header onStartBooking={startBooking} />
 
-        <div className="relative z-10 container text-center text-primary-foreground px-4">
-          <div className="max-w-5xl mx-auto animate-slide-up">
-            <div className="inline-flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-md border border-primary-foreground/20 rounded-full px-5 py-2.5 mb-8">
-              <Sparkles className="w-4 h-4 text-accent" />
-              <span className="text-sm font-medium tracking-wide">Luxury Sri Lanka Tours — Tailored For You</span>
+        <div className="relative z-10 container text-primary-foreground px-4">
+          <div className="max-w-6xl mx-auto animate-slide-up">
+            <div className="grid lg:grid-cols-[1fr_420px] gap-10 lg:gap-16 items-center">
+              {/* Left: Headline */}
+              <div className="text-center lg:text-left">
+                <div className="inline-flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-md border border-primary-foreground/20 rounded-full px-5 py-2.5 mb-8">
+                  <Sparkles className="w-4 h-4 text-accent" />
+                  <span className="text-sm font-medium tracking-wide">Luxury Sri Lanka Tours — Tailored For You</span>
+                </div>
+
+                <h1 className="font-display text-4xl sm:text-5xl lg:text-7xl font-bold mb-6 leading-[1.1] tracking-tight">
+                  Discover the<br />
+                  <span className="text-accent">Pearl of the</span>{' '}
+                  <span className="italic font-medium">Indian Ocean</span>
+                </h1>
+
+                <p className="text-lg sm:text-xl text-primary-foreground/85 mb-8 max-w-2xl leading-relaxed">
+                  Ancient ruins rising from misty jungles. Golden beaches kissed by turquoise waves. 
+                  Let us craft your perfect Sri Lanka adventure.
+                </p>
+
+                <div className="hidden lg:block">
+                  <TrustBadges />
+                </div>
+              </div>
+
+              {/* Right: Multi-step Booking CTA Card */}
+              <div className="bg-card/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-border/30 p-6 lg:p-8 text-foreground">
+                <h3 className="font-display text-xl font-bold text-foreground mb-1">Start Your Journey</h3>
+                <p className="text-muted-foreground text-sm mb-6">Build your dream trip in 4 easy steps</p>
+
+                {/* Step indicators */}
+                <div className="flex gap-2 mb-6">
+                  {[
+                    { icon: Plane, label: 'Arrival' },
+                    { icon: MapPin, label: 'Destinations' },
+                    { icon: Hotel, label: 'Stay' },
+                    { icon: Camera, label: 'Activities' },
+                  ].map((step, i) => (
+                    <button
+                      key={step.label}
+                      onClick={() => setActiveStep(i)}
+                      className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl transition-all duration-300 ${
+                        activeStep === i
+                          ? 'bg-primary text-primary-foreground shadow-lg scale-[1.02]'
+                          : 'bg-muted/60 text-muted-foreground hover:bg-muted'
+                      }`}
+                    >
+                      <step.icon className="w-4 h-4" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider">{step.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Step content with animation */}
+                <div className="min-h-[120px] mb-6">
+                  {activeStep === 0 && (
+                    <div className="animate-fade-in space-y-3">
+                      <p className="font-semibold text-foreground">📍 Where are you flying from?</p>
+                      <p className="text-muted-foreground text-sm">We'll arrange airport pickup, transfers, and your first night in paradise. Choose from Colombo or Mattala airports.</p>
+                      <div className="flex gap-2">
+                        <span className="bg-primary/10 text-primary text-xs font-medium px-3 py-1.5 rounded-lg">Colombo (CMB)</span>
+                        <span className="bg-muted text-muted-foreground text-xs font-medium px-3 py-1.5 rounded-lg">Mattala (HRI)</span>
+                      </div>
+                    </div>
+                  )}
+                  {activeStep === 1 && (
+                    <div className="animate-fade-in space-y-3">
+                      <p className="font-semibold text-foreground">🗺️ Pick your dream destinations</p>
+                      <p className="text-muted-foreground text-sm">Choose from 30+ iconic locations — ancient cities, misty mountains, golden beaches, and wildlife parks.</p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="bg-primary/10 text-primary text-xs font-medium px-3 py-1.5 rounded-lg">Sigiriya</span>
+                        <span className="bg-primary/10 text-primary text-xs font-medium px-3 py-1.5 rounded-lg">Ella</span>
+                        <span className="bg-muted text-muted-foreground text-xs font-medium px-3 py-1.5 rounded-lg">Kandy</span>
+                        <span className="bg-muted text-muted-foreground text-xs font-medium px-3 py-1.5 rounded-lg">Galle</span>
+                      </div>
+                    </div>
+                  )}
+                  {activeStep === 2 && (
+                    <div className="animate-fade-in space-y-3">
+                      <p className="font-semibold text-foreground">🏨 Select your accommodation</p>
+                      <p className="text-muted-foreground text-sm">From cozy boutique hotels to 5-star luxury resorts. We match the perfect stay to each destination.</p>
+                      <div className="flex gap-2">
+                        <span className="bg-muted text-muted-foreground text-xs font-medium px-3 py-1.5 rounded-lg">Budget</span>
+                        <span className="bg-primary/10 text-primary text-xs font-medium px-3 py-1.5 rounded-lg">4-Star</span>
+                        <span className="bg-gold/10 text-gold-foreground text-xs font-medium px-3 py-1.5 rounded-lg">⭐ 5-Star</span>
+                      </div>
+                    </div>
+                  )}
+                  {activeStep === 3 && (
+                    <div className="animate-fade-in space-y-3">
+                      <p className="font-semibold text-foreground">🎯 Add incredible activities</p>
+                      <p className="text-muted-foreground text-sm">Leopard safaris, whale watching, scenic train rides, cooking classes, surfing — your adventure awaits.</p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="bg-primary/10 text-primary text-xs font-medium px-3 py-1.5 rounded-lg">Safari</span>
+                        <span className="bg-accent/10 text-accent text-xs font-medium px-3 py-1.5 rounded-lg">Surfing</span>
+                        <span className="bg-muted text-muted-foreground text-xs font-medium px-3 py-1.5 rounded-lg">Train</span>
+                        <span className="bg-muted text-muted-foreground text-xs font-medium px-3 py-1.5 rounded-lg">Cooking</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <Button variant="hero" size="lg" onClick={startBooking} className="w-full group text-base">
+                  Build Your Dream Trip
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+
+                <p className="text-center text-muted-foreground text-xs mt-3">
+                  Free to plan • No commitment • Takes 3 minutes
+                </p>
+              </div>
             </div>
 
-            <h1 className="font-display text-5xl sm:text-6xl lg:text-8xl font-bold mb-6 leading-[1.1] tracking-tight">
-              Discover the<br />
-              <span className="text-accent">Pearl of the</span>{' '}
-              <span className="italic font-medium">Indian Ocean</span>
-            </h1>
-
-            <p className="text-lg sm:text-xl lg:text-2xl text-primary-foreground/85 mb-10 max-w-3xl mx-auto leading-relaxed">
-              Ancient ruins rising from misty jungles. Golden beaches kissed by turquoise waves. 
-              Let us craft your perfect Sri Lanka adventure.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-              <Button variant="hero" size="xl" onClick={startBooking} className="group">
-                Build Your Dream Trip
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button variant="hero-outline" size="xl" asChild>
-                <Link to="/tours">View Tour Packages</Link>
-              </Button>
+            {/* Mobile trust badges */}
+            <div className="lg:hidden mt-10">
+              <TrustBadges />
             </div>
-
-            <TrustBadges />
           </div>
 
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
