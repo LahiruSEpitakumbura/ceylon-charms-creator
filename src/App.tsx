@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import About from "./pages/About";
 import Destinations from "./pages/Destinations";
 import Tours from "./pages/Tours";
+import TourTracking from "./pages/TourTracking";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import RegisterCustomer from "./pages/RegisterCustomer";
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/destinations" element={<Destinations />} />
             <Route path="/tours" element={<Tours />} />
+            <Route path="/track" element={<TourTracking />} />
             <Route path="/register" element={<Register />} />
             <Route path="/register/customer" element={<RegisterCustomer />} />
             <Route path="/auth/provider" element={<ProviderAuth />} />
