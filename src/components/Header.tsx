@@ -5,7 +5,7 @@ import { Logo } from './Logo';
 import { Link, useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
-  onStartBooking: () => void;
+  onStartBooking?: () => void;
 }
 
 export function Header({ onStartBooking }: HeaderProps) {
